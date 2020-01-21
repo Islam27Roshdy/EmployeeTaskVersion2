@@ -1,0 +1,162 @@
+﻿@model IEnumerable<DataAccessLayer.Models.Employee>
+    <html>
+<head>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+    <script src="~/Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+    @{
+        ViewBag.Title = "Index";
+    }
+
+    <h2>Index</h2>
+
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+    <h3>Search By FirstName:</h3>
+    <input type="text" id="FirstNameSearch" />
+    <h3>Search By Date:</h3>
+     StartDate:
+    <input type="text" id="StartDate" />
+     EndDate:
+    <input type="text" id="EndDate" />
+
+    <input type="button" value="Search" id="Search" />
+
+    <table class="table table-striped" id="TableData" style="margin-top: 20px;">
+        <tr id="appendafter">
+            <th>
+                @Html.DisplayNameFor(model => model.FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BirthDay)
+            </th>
+            <th></th>
+        </tr>
+        <tbody id="Content">
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FirstName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.LastName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.BirthDay)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Edit", "Update", new { id = item.ID }) |
+                        @Html.ActionLink("Details", "Details", new { id = item.ID }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+                    </td>
+                </tr>
+
+
+
+            }
+        </tbody>
+
+        </table>
+    <div id="sample_1_paginate"></div>
+    <span class="Counter">eeee</span>
+
+</body>
+</html>
+
+<script>
+
+
+    function GetAnotherPage(a) {
+        var pageNumber = a.innerText;
+        //window.alert(a.innerHTML);
+       
+        $.ajax({
+            url: '@Url.Action("GetNewPage")',
+            type: 'POST',
+            data: { page: pageNumber},
+            dataType: 'json',
+            success: function (Data) {
+
+            
+
+                if (Data.Result == 'OK') {
+                    $("#Content").empty();
+                 //  var safe = JSON.parse(Data);
+                  //  var date = new Date(Data.Records.BirthDay);
+                   // var backToDate = new Date(parseInt(Data.Records[i].BirthDay));
+                   // console.log(backToDate);
+                   // var x = new Date();
+                   // x = Data.Records[i].BirthDay;
+                    for (var i = 0; i < Data.Records.length; i++) {
+                        console.debug(Data);
+
+                        var row = '<tr><td>' + Data.Records[i].FirstName + '</td><td>' + Data.Records[i].LastName + '</td><td>' + Data.Records[i].BirthDate + '</td></tr>';
+                      //  $("#TableData tbody").empty();
+                        $(row).appendTo("#Content");
+                        //$('#TotalRecordCount').html(Data.TotalRecordCount);
+                    }
+                 
+                }
+            }
+        });
+
+    }
+
+    $(document).ready(function () {
+
+        
+
+        $("#Search").click(function () {
+            var firstName = $("#FirstNameSearch").val();
+            var EndDate = $("#EndDate").val();
+            var StartDate = $("#StartDate").val();
+           
+            if (EndDate == "") {
+                EndDate = null;
+            }
+            if (StartDate== "") {
+                StartDate = null;
+            }
+         
+            $.ajax({
+                url: '@Url.Action("Search")',
+                type: 'POST',
+                data: { FirstName: firstName, StartDate: StartDate, EndDate: EndDate  },
+                dataType: 'json',
+                success: function (Data) {
+                    console.debug(Data)
+                    
+                    if (Data.Result == 'OK') {
+                        $("#Content").empty();
+                        //$("#TableData tbody").html("");
+                        for (var i = 0; i < Data.Records.length; i++){
+
+                            var row = '<tr><td>' + Data.Records[i].FirstName + '</td><td>' + Data.Records[i].LastName + '</td><td>' + Data.Records[i].BirthDate + '</td>';
+                           
+                            $(row).appendTo("#Content");
+                            
+                         }
+                        $("#sample_1_paginate").html(Data.Pagination);
+                    }
+                }
+            });
+        });
+    });
+
+
+
+
+</script>
